@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 /** 清运车辆 */
 @Data
@@ -28,4 +29,13 @@ public class Vehicle {
 
     @Column(nullable = false, length = 64)
     private String companyName;     // 所属清运公司
+
+    /** 称重复核认定违规混装等情形时，暂停后续派单权限 */
+    @Column(nullable = false)
+    private Boolean dispatchBlocked = false;
+
+    @Column(length = 256)
+    private String blockReason;
+
+    private LocalDateTime blockedAt;
 }

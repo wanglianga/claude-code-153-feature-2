@@ -44,6 +44,12 @@ waste:
     weigh-anomaly-threshold-pct: 20.0  # 称重偏差异常阈值（%）
     capacity-warn-ratio: 0.9     # 垃圾点容量预警比例（超过则不允许直接通过预约）
     late-tolerance-minutes: 30   # 车辆迟到容忍分钟数
+    # 称重复核
+    scale-diff-threshold-pct: 10.0   # 小区地磅与处置场磅偏差超此比例视为称重设备异常
+    merged-stop-minutes: 5           # 车辆停留达到该分钟数视为一次装车停留
+    wood-bag-weight-kg: 18.0         # 木板类单袋估算重量
+    glass-bag-weight-kg: 30.0        # 玻璃类单袋估算重量
+    tile-bag-weight-kg: 35.0         # 瓷砖类单袋估算重量
 
 springdoc:
   swagger-ui:

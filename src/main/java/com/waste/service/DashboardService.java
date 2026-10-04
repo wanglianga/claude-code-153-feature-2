@@ -27,6 +27,7 @@ public class DashboardService {
     private final VehicleRepository vehicleRepo;
     private final BillRepository billRepo;
     private final WastePointRepository wastePointRepo;
+    private final WeightReviewRepository weightReviewRepo;
 
     /** 物业端：各楼栋预约、超时未清、违规堆放、押金扣款、清运公司履约 */
     public Map<String, Object> property() {
@@ -86,6 +87,16 @@ public class DashboardService {
 
         // 清运公司履约：准时率、异常率
         result.put("collectorPerformance", collectorPerformance());
+
+        // 称重差异复核：待复核单数、被暂停派单的车辆
+        List<WeightReview> reviews = weightReviewRepo.findAllByOrderByIdDesc();
+        result.put("weightReviews", reviews);
+        result.put("pendingWeightReviews", reviews.stream()
+                .filter(r -> r.getStatus() == ReviewStatus.PENDING).count());
+        result.put("mergedCollectionReviews", reviews.stream()
+                .filter(r -> r.getConclusion() == WeightConclusion.MERGED_COLLECTION).count());
+        result.put("blockedVehicles", vehicleRepo.findAll().stream()
+                .filter(v -> Boolean.TRUE.equals(v.getDispatchBlocked())).toList());
         return result;
     }
 

@@ -50,6 +50,12 @@ public class DispatchService {
         Vehicle vehicle = vehicleRepo.findById(vehicleId)
                 .orElseThrow(() -> new BizException(404, "车辆不存在"));
 
+        // 称重复核认定违规混装等情形后，车辆派单权限被暂停
+        if (Boolean.TRUE.equals(vehicle.getDispatchBlocked())) {
+            throw new BizException("车辆 " + vehicle.getPlateNo() + " 已被暂停派单权限："
+                    + vehicle.getBlockReason() + "；请联系物业解除限制后再派单");
+        }
+
         // 车辆限行校验（按预约日期尾号限行）
         checkPlateRestriction(vehicle.getPlateNo(), appt.getApptDate());
 
