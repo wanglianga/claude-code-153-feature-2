@@ -27,6 +27,7 @@ public class DashboardService {
     private final VehicleRepository vehicleRepo;
     private final BillRepository billRepo;
     private final WastePointRepository wastePointRepo;
+    private final WeighReviewRepository reviewRepo;
 
     /** 物业端：各楼栋预约、超时未清、违规堆放、押金扣款、清运公司履约 */
     public Map<String, Object> property() {
@@ -86,6 +87,14 @@ public class DashboardService {
 
         // 清运公司履约：准时率、异常率
         result.put("collectorPerformance", collectorPerformance());
+
+        // 称重差异复核：待处理复核单、已冻结派单车辆
+        List<com.waste.entity.WeighReview> pendingReviews = reviewRepo
+                .findByStatusOrderByIdDesc(com.waste.enums.ReviewStatus.PENDING);
+        result.put("pendingWeighReviews", pendingReviews);
+        result.put("pendingWeighReviewCount", pendingReviews.size());
+        result.put("suspendedVehicles", vehicleRepo.findAll().stream()
+                .filter(v -> Boolean.TRUE.equals(v.getDispatchSuspended())).toList());
         return result;
     }
 
@@ -175,6 +184,21 @@ public class DashboardService {
         result.put("period", period == null ? "ALL" : period);
         result.put("summaryByType", byType);
         result.put("disputedBills", bills.stream().filter(b -> b.getStatus() == BillStatus.DISPUTED).toList());
+
+        // 称重复核对结算的影响：待复核、已确认结论、被订正的清运结算
+        List<com.waste.entity.WeighReview> reviews = reviewRepo.findAll();
+        Map<String, Object> reviewStat = new LinkedHashMap<>();
+        reviewStat.put("pending", reviews.stream()
+                .filter(r -> r.getStatus() == com.waste.enums.ReviewStatus.PENDING).count());
+        reviewStat.put("confirmed", reviews.stream()
+                .filter(r -> r.getStatus() == com.waste.enums.ReviewStatus.CONFIRMED).count());
+        reviewStat.put("mergedCollection", reviews.stream()
+                .filter(r -> r.getFinalConclusion() == com.waste.enums.ReviewConclusion.MERGED_COLLECTION).count());
+        reviewStat.put("deviceAnomaly", reviews.stream()
+                .filter(r -> r.getFinalConclusion() == com.waste.enums.ReviewConclusion.DEVICE_ANOMALY).count());
+        reviewStat.put("driverMisentry", reviews.stream()
+                .filter(r -> r.getFinalConclusion() == com.waste.enums.ReviewConclusion.DRIVER_MISENTRY).count());
+        result.put("weighReviewSummary", reviewStat);
         result.put("recentBills", bills.stream()
                 .sorted(Comparator.comparing(Bill::getId).reversed()).limit(50).toList());
         return result;

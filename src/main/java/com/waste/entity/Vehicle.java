@@ -28,4 +28,14 @@ public class Vehicle {
 
     @Column(nullable = false, length = 64)
     private String companyName;     // 所属清运公司
+
+    /** 派单权限冻结：称重复核认定合并清运/司机误填等后暂停后续派单，物业核查后可解冻 */
+    @Column(nullable = false)
+    private Boolean dispatchSuspended = false;
+
+    @Column(length = 512)
+    private String suspendReason;
+
+    private Long suspendReviewId;    // 触发冻结的复核单
+    private java.time.LocalDateTime suspendedAt;
 }

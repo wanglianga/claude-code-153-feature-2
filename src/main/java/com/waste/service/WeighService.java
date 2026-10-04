@@ -33,6 +33,7 @@ public class WeighService {
     private final EventBus eventBus;
     private final TraceLogger traceLogger;
     private final TraceUpdater traceUpdater;
+    private final WeighReviewService weighReviewService;
 
     /**
      * 车辆进出场称重：记录空车/装载重量、现场照片、清运联单；
@@ -124,6 +125,9 @@ public class WeighService {
             complaintRepo.save(c);
             traceLogger.record(appt.getId(), "COMPLAINT", c.getId(), null, "AUTO_COMPLAINT_WEIGH",
                     c.getDescription());
+
+            // 自动立称重复核案（证据可随后补传，物业确认结论）
+            weighReviewService.openForAnomaly(w, collector);
         }
 
         // 触发计费（MQ 异步 / 降级同步）

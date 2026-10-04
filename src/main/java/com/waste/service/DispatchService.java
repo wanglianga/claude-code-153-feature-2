@@ -50,6 +50,12 @@ public class DispatchService {
         Vehicle vehicle = vehicleRepo.findById(vehicleId)
                 .orElseThrow(() -> new BizException(404, "车辆不存在"));
 
+        // 称重复核认定合并清运/司机误填后冻结的车辆，物业解冻前不得派单
+        if (Boolean.TRUE.equals(vehicle.getDispatchSuspended())) {
+            throw new BizException("车辆 " + vehicle.getPlateNo() + " 因称重复核问题已被暂停派单权限（"
+                    + vehicle.getSuspendReason() + "），须经物业核查解冻后方可派单");
+        }
+
         // 车辆限行校验（按预约日期尾号限行）
         checkPlateRestriction(vehicle.getPlateNo(), appt.getApptDate());
 

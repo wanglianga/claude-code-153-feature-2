@@ -35,6 +35,8 @@ public class TraceService {
     private final DepositDeductionRepository deductionRepo;
     private final ComplaintRepository complaintRepo;
     private final TraceEventRepository traceEventRepo;
+    private final WeighReviewRepository weighReviewRepo;
+    private final WeighReviewShareRepository reviewShareRepo;
 
     public Map<String, Object> traceByAppointment(Session session, Long appointmentId) {
         CollectionAppointment appt = apptRepo.findById(appointmentId)
@@ -56,6 +58,18 @@ public class TraceService {
         result.put("violations", violations);
         result.put("complaints", complaintRepo.findByTargetAppointmentId(appointmentId));
         result.put("depositDeductions", deductionRepo.findByRegistrationIdOrderByIdDesc(reg.getId()));
+
+        // 称重差异复核：本户触发的复核单；本户作为被合并户的拆分明细（并带出整单）
+        List<com.waste.entity.WeighReview> reviews =
+                new ArrayList<>(weighReviewRepo.findByAppointmentId(appointmentId));
+        result.put("weighReviews", reviews);
+        List<com.waste.entity.WeighReviewShare> myShares = reviewShareRepo.findByAppointmentId(appointmentId);
+        result.put("weighReviewShares", myShares);
+        for (com.waste.entity.WeighReviewShare s : myShares) {
+            if (reviews.stream().noneMatch(r -> r.getId().equals(s.getReviewId()))) {
+                weighReviewRepo.findById(s.getReviewId()).ifPresent(reviews::add);
+            }
+        }
 
         // 事件流：预约链路事件 + 上报/登记/违规等产生时尚未关联预约的事件
         List<TraceEvent> events = new ArrayList<>(traceEventRepo.findByAppointmentIdOrderByIdAsc(appointmentId));

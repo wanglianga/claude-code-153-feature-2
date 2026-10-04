@@ -23,6 +23,7 @@ public class DisposalService {
 
     private final DisposalReceiptRepository receiptRepo;
     private final WeighRecordRepository weighRepo;
+    private final WeighReviewService weighReviewService;
     private final TraceLogger traceLogger;
     private final TraceUpdater traceUpdater;
 
@@ -48,6 +49,9 @@ public class DisposalService {
         traceLogger.record(w.getAppointmentId(), "DISPOSAL", r.getId(), collector, "DISPOSAL_RECEIPT",
                 "处置场回执: 处置场=" + disposalSite + " 回执号=" + r.getReceiptNo()
                         + " 接收重量=" + receivedWeightKg + "kg");
+
+        // 回执是称重复核关键证据：若该称重记录有待复核单，自动重新比对
+        weighReviewService.refreshIfPending(w.getId());
         return r;
     }
 

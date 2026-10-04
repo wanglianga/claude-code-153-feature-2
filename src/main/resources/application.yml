@@ -44,6 +44,18 @@ waste:
     weigh-anomaly-threshold-pct: 20.0  # 称重偏差异常阈值（%）
     capacity-warn-ratio: 0.9     # 垃圾点容量预警比例（超过则不允许直接通过预约）
     late-tolerance-minutes: 30   # 车辆迟到容忍分钟数
+    # 称重差异复核：材质单袋估算重量（kg）与判定阈值
+    material-bag-weight-kg:
+      wood: 18.0
+      glass: 32.0
+      tile: 30.0
+      concrete: 35.0
+      mixed: 25.0
+    review-merge-stay-minutes: 5    # 停留≥该分钟数视为装车停留
+    review-merge-window-hours: 6    # 称重前后多少小时内的同车预约纳入合并排查
+    review-merge-tolerance-pct: 25.0  # 多户估算合计与净重偏差≤该比例→判定合并清运
+    review-receipt-match-pct: 20.0  # 回执重量与按袋估算偏差≤该比例视为相互印证
+    review-device-deviation-pct: 10.0 # 车载净重与回执偏差>该比例→称重设备异常
 
 springdoc:
   swagger-ui:
